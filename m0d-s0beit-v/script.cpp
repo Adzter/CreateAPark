@@ -193,29 +193,6 @@ bool moveIsActive;
 std::vector<Object> objectList;
 DWORD instaRampLastPressed = GetTickCount();
 
-Object simpleSpawnObjectRot(char *mdl, float x, float y, float z, float p)
-{
-	// Get the model's hash value
-	DWORD model = GAMEPLAY::GET_HASH_KEY(mdl);
-
-	// Get the model working in multiplayer, courtesy of:
-	// https://www.reddit.com/r/Gta5Modding/comments/372yka/simple_coding_snippets_c/crk76n0
-	if (STREAMING::IS_MODEL_VALID(model)) {
-		STREAMING::REQUEST_MODEL(model);
-
-		// Make sure the model has loaded
-		while (!STREAMING::HAS_MODEL_LOADED(model)) {
-			WAIT(0);
-		}
-
-		// Return the object
-		return OBJECT::CREATE_OBJECT(model, x, y, z, p, 1, 1);
-	}
-
-	// Because C++ complains about all routes not having a return
-	return NULL;
-}
-
 Object simpleSpawnObject(char *mdl, float x, float y, float z)
 {
 	// Get the model's hash value
@@ -298,10 +275,11 @@ void update_features()
 		Vector3 playerPos = ENTITY::GET_ENTITY_COORDS(PLAYER::PLAYER_PED_ID(), false);
 		float rot = (ENTITY::GET_ENTITY_ROTATION(playerPed, 0)).z;
 
-		draw_menu_line(std::to_string(rot), 15.0f, 50.0f, 50.0f, 550.0f, 5.0f, false, false, false);
-
 		// Spawn a ramp infront of the player then delete it afterwards
-		Object o = simpleSpawnObjectRot("prop_mp_ramp_01", playerPos.x + (dir.x * 10.0f), playerPos.y + (dir.y * 10.0f), playerPos.z - 0.5f, rot);
+		Object o = simpleSpawnObject("prop_mp_ramp_01", playerPos.x + (dir.x * 10.0f), playerPos.y + (dir.y * 10.0f), playerPos.z - 1.0f);
+		
+		// Set the rotation of the object just created relative to the player
+		ENTITY::SET_ENTITY_ROTATION(o, 0, 0, rot, 1, 1);
 	}
 
 	// Check if we have an object that was last spawned
